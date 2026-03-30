@@ -1,0 +1,96 @@
+name: 🗂️ Setup GitHub Project Board
+
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: read
+  contents: read
+
+jobs:
+  setup-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub Project
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          echo "Creating GitHub Project..."
+
+          # Get owner ID
+          OWNER_DATA=$(gh api graphql -f query='
+            query($login: String!) {
+              user(login: $login) {
+                id
+                login
+              }
+            }
+          ' -f login="$OWNER" 2>&1)
+          echo "Owner data: $OWNER_DATA"
+          OWNER_ID=$(echo "$OWNER_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['user']['id'])" 2>/dev/null || echo "")
+
+          if [ -z "$OWNER_ID" ]; then
+            echo "Could not get owner ID, skipping project creation"
+            exit 0
+          fi
+
+          # Create project
+          PROJECT_DATA=$(gh api graphql -f query='
+            mutation($ownerId: ID!, $title: String!) {
+              createProjectV2(input: {ownerId: $ownerId, title: $title}) {
+                projectV2 {
+                  id
+                  number
+                  url
+                }
+              }
+            }
+          ' -f ownerId="$OWNER_ID" -f title="🇲🇾 吉隆坡旅遊 2026" 2>&1)
+          echo "Project creation result: $PROJECT_DATA"
+
+          PROJECT_ID=$(echo "$PROJECT_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['createProjectV2']['projectV2']['id'])" 2>/dev/null || echo "")
+          PROJECT_NUMBER=$(echo "$PROJECT_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['createProjectV2']['projectV2']['number'])" 2>/dev/null || echo "")
+          PROJECT_URL=$(echo "$PROJECT_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['createProjectV2']['projectV2']['url'])" 2>/dev/null || echo "")
+
+          if [ -z "$PROJECT_ID" ]; then
+            echo "Could not create project, exiting"
+            exit 1
+          fi
+          echo "Created project: $PROJECT_URL (ID: $PROJECT_ID, Number: $PROJECT_NUMBER)"
+
+          # Add all issues to the project
+          ISSUES=$(gh issue list --repo "$OWNER/$REPO_NAME" --state open --json number,id --limit 50 2>&1)
+          echo "Issues: $ISSUES"
+
+          echo "$ISSUES" | python3 -c "
+          import sys, json, subprocess, os
+          issues = json.load(sys.stdin)
+          project_id = '$PROJECT_ID'
+          owner = '$OWNER'
+          repo = '$REPO_NAME'
+          token = os.environ.get('GH_TOKEN', '')
+          for issue in issues:
+              issue_id = issue['id']
+              print(f'Adding issue #{issue[\"number\"]} to project...')
+              result = subprocess.run(
+                  ['gh', 'api', 'graphql',
+                   '-f', f'query=mutation(\$projectId: ID!, \$contentId: ID!) {{ addProjectV2ItemById(input: {{projectId: \$projectId, contentId: \$contentId}}) {{ item {{ id }} }} }}',
+                   '-f', f'projectId={project_id}',
+                   '-f', f'contentId={issue_id}'],
+                  capture_output=True, text=True
+              )
+              print(result.stdout[:200] if result.stdout else 'no output')
+              if result.returncode != 0:
+                  print(f'Error: {result.stderr[:200]}')
+          "
+
+          echo ""
+          echo "✅ Project setup complete!"
+          echo "📋 Project URL: $PROJECT_URL"
+          echo ""
+          echo "Next steps:"
+          echo "1. Visit $PROJECT_URL"
+          echo "2. Add a 'Table' view from the project settings"
+          echo "3. Configure status columns: 待處理 | 進行中 | 已完成"
