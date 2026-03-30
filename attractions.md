@@ -61,6 +61,14 @@
 - **交通**：Grab 前往約 15 分鐘
 - **建議**：禮拜時間勿打擾，拍照請尊重宗教場所規定
 
+### 🐠 Aquaria KLCC 水族館
+- **地區**：KLCC，吉隆坡市中心（位於吉隆坡會展中心 Level 2）
+- **門票**：成人 RM 75；兒童（3～12歲）RM 55
+- **開放時間**：10:00 ～ 20:00（全年無休）
+- **交通**：MRT KLCC 站步行約 5 分鐘，或雙子星塔地下道直達
+- **建議**：提前線上購票可享折扣；下午前往可避開人潮
+- **亮點**：超過 150 種、5,000 隻海洋生物，90 公尺玻璃水下隧道，鯊魚與魟魚近距離共游
+
 ### 🌿 森林生態公園（KL Forest Eco Park）
 - **地區**：Bukit Nanas，KL Tower 旁
 - **門票**：免費
@@ -147,7 +155,7 @@
 
 | 區域 | 主要景點 | 交通建議 |
 |-----|---------|---------|
-| KLCC | 雙子星塔、KLCC 公園 | MRT KLCC 站 |
+| KLCC | 雙子星塔、KLCC 公園、Aquaria KLCC 水族館 | MRT KLCC 站 |
 | Bukit Bintang | KL Tower、購物商場、Jalan Alor | MRT Bukit Bintang 站 |
 | 老城區 | 獨立廣場、茨廠街、中央市場 | LRT Masjid Jamek / Pasar Seni 站 |
 | Perdana / KL Sentral 附近 | 國家博物館、伊斯蘭藝術博物館 | KL Sentral 步行 10～15 分鐘 |
@@ -159,6 +167,7 @@
 ## 預購門票建議
 
 - [ ] 雙子星塔空橋 / 觀景台（[官網預訂](https://www.petronastwintowers.com.my)）
+- [ ] Aquaria KLCC 水族館（[官網預訂](https://www.aquariaklcc.com)）
 - [ ] KL Tower 觀景台（[官網預訂](https://menarakl.com.my)）
 - [ ] 黑風洞（免費，無需預訂）
 - [ ] 馬六甲河遊船（RM 30/人，現場購票即可）
