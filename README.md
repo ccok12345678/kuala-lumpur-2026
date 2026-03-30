@@ -13,3 +13,4 @@
 - [打包清單](./packing-list.md)
 - [住宿資訊](./hotels.md)
 - [景點清單](./attractions.md)
+- [特色飲食](./food.md)
