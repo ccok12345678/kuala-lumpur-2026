@@ -16,20 +16,31 @@
 
 ---
 
-## Day 2｜2026-10-23（文化・歷史探索）
+## Day 2｜2026-10-23（文化・黑風洞・伊斯蘭藝術）
 
 - [ ] 早餐：飯店或附近 Mamak 餐廳
 - [ ] 參觀黑風洞（Batu Caves）— 需上 272 級彩色階梯
 - [ ] 午餐：Jalan Masjid India 印度穆斯林料理
 - [ ] 參觀伊斯蘭藝術博物館（Islamic Arts Museum Malaysia）
-- [ ] 參觀馬來西亞國家博物館（Muzium Negara）
-- [ ] 獨立廣場（Merdeka Square）散步
-- [ ] 蘇丹阿都沙末大廈（Sultan Abdul Samad Building）拍照
-- [ ] 晚餐：中央市場（Central Market）附近餐廳
+- [ ] 吉隆坡塔（KL Tower）— 欣賞城市全景
+- [ ] 森林生態公園（KL Forest Eco Park）漫步
+- [ ] 晚餐：武吉免登（Bukit Bintang）美食街
 
 ---
 
-## Day 3｜2026-10-24（前往馬六甲）
+## Day 3｜2026-10-24（國家博物館・獨立廣場・唐人街）
+
+- [ ] 早餐：飯店早餐
+- [ ] 參觀馬來西亞國家博物館（Muzium Negara）
+- [ ] 獨立廣場（Merdeka Square）散步
+- [ ] 蘇丹阿都沙末大廈（Sultan Abdul Samad Building）拍照
+- [ ] 午餐：中央市場（Central Market）附近餐廳
+- [ ] 前往 Petaling Street（唐人街）逛街購物
+- [ ] 晚餐：茨廠街美食（雲吞麵、豬腸粉）或 Coliseum Café 百年老店
+
+---
+
+## Day 4｜2026-10-25（前往馬六甲）
 
 - [ ] 早餐：飯店早餐
 - [ ] 搭巴士前往馬六甲（TBS 巴士總站出發，約 2 小時，RM 10～15/人）
@@ -43,7 +54,7 @@
 
 ---
 
-## Day 4｜2026-10-25（馬六甲深度遊・返回吉隆坡）
+## Day 5｜2026-10-26（馬六甲深度遊・返回吉隆坡）
 
 - [ ] 早餐：馬六甲在地早餐（Cendol、Laksa Lemak）
 - [ ] 參觀鄭和文化館（Cheng Ho Cultural Museum）
@@ -52,18 +63,6 @@
 - [ ] 購買馬六甲伴手禮（雞場街手工藝品、咖啡）
 - [ ] 下午搭巴士返回吉隆坡（約 2 小時）
 - [ ] 晚餐：前往 Jalan Alor 夜市，品嚐串燒雞翅、海鮮炒麵、榴槤
-
----
-
-## Day 5｜2026-10-26（吉隆坡・自然・購物）
-
-- [ ] 早餐：Bangsar 咖啡廳
-- [ ] 吉隆坡塔（KL Tower）— 欣賞城市全景
-- [ ] 森林生態公園（KL Forest Eco Park）漫步
-- [ ] 午餐：Pavilion 購物中心美食廣場
-- [ ] 武吉免登（Bukit Bintang）購物
-- [ ] 前往 Petaling Street（唐人街）逛街購物
-- [ ] 晚餐：茨廠街美食（雲吞麵、豬腸粉）或 Coliseum Café 百年老店
 
 ---
 
