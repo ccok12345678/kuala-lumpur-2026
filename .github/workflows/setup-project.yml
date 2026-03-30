@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - 'copilot/**'
     paths:
       - '.github/workflows/setup-project.yml'
 
