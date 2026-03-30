@@ -11,6 +11,7 @@
 - [ ] 辦理飯店 Check-in
 - [ ] 前往雙子星塔（Petronas Twin Towers）外觀拍照
 - [ ] KLCC 公園散步
+- [ ] 參觀 Aquaria KLCC 水族館（10:00 ～ 20:00，RM 75/人）
 - [ ] 晚餐：武吉免登（Bukit Bintang）美食街
 
 ---
