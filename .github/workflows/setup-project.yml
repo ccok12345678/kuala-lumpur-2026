@@ -67,21 +67,28 @@ jobs:
 
           # ── 2. Milestones ──────────────────────────────────────────────────────
           print("\n=== Setting up Milestones ===")
-          milestones = [
+          milestones_to_create = [
               ("🎯 出發前三個月", "2026-07-22T00:00:00Z", "完成機票、飯店預訂、基本行程規劃"),
               ("🎯 出發前一個月", "2026-09-22T00:00:00Z", "確認所有文件、行程安排、景點門票"),
               ("🎯 出發前一週",   "2026-10-15T00:00:00Z", "完成打包、外幣兌換、最終確認"),
               ("✈️ 出發日",       "2026-10-22T00:00:00Z", "所有準備完成，出發！"),
           ]
-          for title, due, desc in milestones:
-              result = gh_api(
-                  f"repos/{REPO}/milestones",
-                  method="POST",
-                  title=title,
-                  due_on=due,
-                  description=desc,
-              )
-              print(f"  Milestone: {title}")
+          # Get existing milestones to avoid duplicates
+          existing_ms_json = gh_api(f"repos/{REPO}/milestones", method="GET")
+          existing_ms = json.loads(existing_ms_json) if existing_ms_json else []
+          existing_ms_titles = {m["title"] for m in existing_ms}
+          for title, due, desc in milestones_to_create:
+              if title in existing_ms_titles:
+                  print(f"  Milestone already exists: {title}")
+              else:
+                  gh_api(
+                      f"repos/{REPO}/milestones",
+                      method="POST",
+                      title=title,
+                      due_on=due,
+                      description=desc,
+                  )
+                  print(f"  Milestone created: {title}")
 
           # Get milestone numbers
           ms_json = gh_api(f"repos/{REPO}/milestones", method="GET")
@@ -102,7 +109,16 @@ jobs:
           # ── 3. Issues ──────────────────────────────────────────────────────────
           print("\n=== Setting up Issues ===")
 
+          # Get existing issue titles to avoid duplicates
+          existing_issues_json = gh("issue", "list", "--repo", REPO, "--state", "all",
+                                    "--json", "title", "--limit", "100")
+          existing_issues = json.loads(existing_issues_json) if existing_issues_json else []
+          existing_issue_titles = {i["title"] for i in existing_issues}
+
           def create_issue(title, body, label, milestone):
+              if title in existing_issue_titles:
+                  print(f"  Issue already exists: {title}")
+                  return
               args = [
                   "issue", "create",
                   "--title", title,
