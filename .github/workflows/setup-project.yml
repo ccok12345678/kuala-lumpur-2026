@@ -1,0 +1,361 @@
+name: 🇲🇾 Setup Travel Planning Project
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'copilot/**'
+    paths:
+      - '.github/workflows/setup-project.yml'
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Labels, Milestones, and Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 << 'PYEOF'
+          import subprocess
+          import json
+          import os
+          import sys
+
+          REPO = os.environ["REPO"]
+          GH_TOKEN = os.environ["GH_TOKEN"]
+
+          def gh(*args, input=None):
+              result = subprocess.run(
+                  ["gh"] + list(args),
+                  capture_output=True, text=True,
+                  env={**os.environ, "GH_TOKEN": GH_TOKEN}
+              )
+              if result.returncode != 0:
+                  print(f"Warning: {' '.join(args[:3])} failed: {result.stderr[:200]}")
+              return result.stdout.strip()
+
+          def gh_api(endpoint, method="GET", **fields):
+              args = ["api", endpoint, "--method", method]
+              for k, v in fields.items():
+                  args += ["-f", f"{k}={v}"]
+              return gh(*args)
+
+          # ── 1. Labels ──────────────────────────────────────────────────────────
+          print("=== Setting up Labels ===")
+          labels = [
+              ("✈️ 交通",  "0075ca", "機票、接駁、市區交通"),
+              ("🏨 住宿",  "0e8a16", "飯店、民宿預訂"),
+              ("🎡 景點",  "e4e669", "景點研究與預約"),
+              ("💰 預算",  "f9d0c4", "費用、預算、兌換"),
+              ("📄 文件",  "d93f0b", "護照、簽證、保險"),
+              ("🍜 餐飲",  "e11d48", "餐廳、夜市、美食清單"),
+          ]
+          for name, color, desc in labels:
+              result = gh("label", "create", name,
+                          "--color", color,
+                          "--description", desc,
+                          "--repo", REPO,
+                          "--force")
+              print(f"  Label: {name}")
+
+          # ── 2. Milestones ──────────────────────────────────────────────────────
+          print("\n=== Setting up Milestones ===")
+          milestones_to_create = [
+              ("🎯 出發前三個月", "2026-07-22T00:00:00Z", "完成機票、飯店預訂、基本行程規劃"),
+              ("🎯 出發前一個月", "2026-09-22T00:00:00Z", "確認所有文件、行程安排、景點門票"),
+              ("🎯 出發前一週",   "2026-10-15T00:00:00Z", "完成打包、外幣兌換、最終確認"),
+              ("✈️ 出發日",       "2026-10-22T00:00:00Z", "所有準備完成，出發！"),
+          ]
+          # Get existing milestones to avoid duplicates
+          existing_ms_json = gh_api(f"repos/{REPO}/milestones", method="GET")
+          existing_ms = json.loads(existing_ms_json) if existing_ms_json else []
+          existing_ms_titles = {m["title"] for m in existing_ms}
+          for title, due, desc in milestones_to_create:
+              if title in existing_ms_titles:
+                  print(f"  Milestone already exists: {title}")
+              else:
+                  gh_api(
+                      f"repos/{REPO}/milestones",
+                      method="POST",
+                      title=title,
+                      due_on=due,
+                      description=desc,
+                  )
+                  print(f"  Milestone created: {title}")
+
+          # Get milestone numbers
+          ms_json = gh_api(f"repos/{REPO}/milestones", method="GET")
+          ms_data = json.loads(ms_json) if ms_json else []
+
+          def get_milestone_num(keyword):
+              for m in ms_data:
+                  if keyword in m["title"]:
+                      return m["number"]
+              return None
+
+          M3 = get_milestone_num("三個月")
+          M1 = get_milestone_num("一個月")
+          MW = get_milestone_num("一週")
+          MD = get_milestone_num("出發日")
+          print(f"  Milestones: M3={M3}, M1={M1}, MW={MW}, MD={MD}")
+
+          # ── 3. Issues ──────────────────────────────────────────────────────────
+          print("\n=== Setting up Issues ===")
+
+          # Get existing issue titles to avoid duplicates
+          existing_issues_json = gh("issue", "list", "--repo", REPO, "--state", "all",
+                                    "--json", "title", "--limit", "100")
+          existing_issues = json.loads(existing_issues_json) if existing_issues_json else []
+          existing_issue_titles = {i["title"] for i in existing_issues}
+
+          def create_issue(title, body, label, milestone):
+              if title in existing_issue_titles:
+                  print(f"  Issue already exists: {title}")
+                  return
+              args = [
+                  "issue", "create",
+                  "--title", title,
+                  "--body", body,
+                  "--label", label,
+                  "--repo", REPO,
+              ]
+              if milestone:
+                  args += ["--milestone", str(milestone)]
+              result = gh(*args)
+              print(f"  Issue: {title}")
+              return result
+
+          issues = [
+              (
+                  "✅ 確認護照有效期限",
+                  """## 任務說明
+          確認護照有效期限至 2027-04 以後（出發日起6個月）
+
+          ## 檢查項目
+          - [ ] 確認護照效期
+          - [ ] 若需換發，立即辦理（需1-3個月）
+          - [ ] 確認護照頁面完整無破損
+
+          > 馬來西亞入境要求：護照效期6個月以上""",
+                  "📄 文件", M3,
+              ),
+              (
+                  "🛡️ 購買旅遊保險",
+                  """## 任務說明
+          為 2 人購買旅遊保險（2026-10-22 ～ 2026-10-27）
+
+          ## 建議保障項目
+          - [ ] 旅遊醫療（建議 USD 100,000+）
+          - [ ] 旅遊不便險（班機延誤、行李遺失）
+          - [ ] 緊急救援
+
+          ## 推薦管道
+          - 台灣各大保險公司
+          - 信用卡附加旅遊險（確認是否足夠）
+          - 網路保險平台""",
+                  "📄 文件", M3,
+              ),
+              (
+                  "✈️ 購買台北↔吉隆坡來回機票",
+                  """## 任務說明
+          為 2 人購買台北（桃園）↔ 吉隆坡（KLIA）來回機票
+
+          ## 行程
+          - **去程**：2026-10-22（桃園 → 吉隆坡）
+          - **回程**：2026-10-27（吉隆坡 → 桃園）
+
+          ## 注意事項
+          - [ ] 比較各航空公司票價（台灣虎航、馬來西亞航空、亞航等）
+          - [ ] 確認行李額度
+          - [ ] 確認座位安排
+          - [ ] 截圖存檔訂位確認信""",
+                  "✈️ 交通", M3,
+              ),
+              (
+                  "🏨 預訂吉隆坡飯店（4晚）+ 馬六甲飯店（1晚）",
+                  """## 任務說明
+          為 2 人預訂住宿（共 5 晚）
+
+          ### 吉隆坡（4 晚）
+          - Check-in：2026-10-22 / Check-out：2026-10-27（4晚，中間 Day 3-4 前往馬六甲過夜，回來後繼續住同一飯店）
+          - 建議：訂同一家飯店，行李可寄存，出發馬六甲前先辦理行李寄存
+          - 建議區域：Bukit Bintang 或 KLCC
+          - MRT/LRT 站步行10分鐘內，含早餐優先
+
+          ### 馬六甲（1 晚）
+          - Check-in：2026-10-24 / Check-out：2026-10-25
+          - 建議住雞場街（Jonker Street）附近，步行景點方便
+
+          ## 比價
+          - [ ] Booking.com
+          - [ ] Agoda
+          - [ ] Hotels.com
+          - [ ] 直接官網
+
+          詳見 [住宿資訊](../hotels.md)""",
+                  "🏨 住宿", M3,
+              ),
+              (
+                  "🚌 規劃機場↔市區交通",
+                  """## 任務說明
+          確認吉隆坡機場至市區交通方案
+
+          ## 選項
+          - [ ] KLIA Ekspres（最快，約28分鐘，RM 55/人）
+          - [ ] 機場巴士（較便宜，約1小時）
+          - [ ] Grab（彈性，價格依時段）
+
+          ## 建議
+          - 去程：KLIA Ekspres（攜帶行李方便）
+          - 回程：KLIA Ekspres（準時可靠）
+
+          詳見 [每日行程](../itinerary.md)""",
+                  "✈️ 交通", M1,
+              ),
+              (
+                  "💱 兌換馬幣（MYR）",
+                  """## 任務說明
+          兌換馬來西亞令吉（MYR）現金
+
+          ## 建議金額
+          - 每人 RM 500 ～ 800
+          - **合計：RM 1,000 ～ 1,600**
+
+          ## 兌換方式
+          - [ ] 台灣銀行出發前兌換
+          - [ ] 桃園機場兌換
+          - [ ] 吉隆坡當地兌換所（通常匯率較優）
+
+          ## 注意事項
+          - 確認信用卡是否有海外刷卡手續費
+          - 帶 2 張不同銀行的信用卡備用
+
+          詳見 [預算規劃](../budget.md)""",
+                  "💰 預算", M1,
+              ),
+              (
+                  "🗼 預購雙子星塔與KL Tower門票",
+                  """## 任務說明
+          提前購買熱門景點門票，避免現場售罄
+
+          ## 門票
+          - [ ] 雙子星塔 Skybridge（RM 80/人）→ [官網購買](https://www.petronastwintowers.com.my)
+          - [ ] KL Tower 觀景台（RM 52/人）→ [官網購買](https://menarakl.com.my)
+
+          ## 建議
+          - 建議 1-2 個月前購買
+          - 確認日期與時段
+
+          詳見 [景點清單](../attractions.md)""",
+                  "🎡 景點", M1,
+              ),
+              (
+                  "⛰️ 規劃黑風洞行程",
+                  """## 任務說明
+          規劃黑風洞（Batu Caves）參觀行程
+
+          ## 資訊
+          - **地點**：Gombak，吉隆坡北郊
+          - **費用**：免費
+          - **開放時間**：06:00 ～ 21:00
+          - **建議時間**：早上 08:00 前往，避開正午高溫
+
+          ## 交通
+          - KTM Komuter Batu Caves 線，約 30 分鐘
+
+          ## 注意
+          - [ ] 確認穿著（需遮蔽肩膀）
+          - [ ] 穿舒適爬樓梯鞋（272 階）
+          - [ ] 帶防蚊液
+
+          詳見 [景點清單](../attractions.md)""",
+                  "🎡 景點", M1,
+              ),
+              (
+                  "🍜 整理吉隆坡美食清單",
+                  """## 任務說明
+          整理必吃美食與餐廳清單
+
+          ## 必吃清單
+          - [ ] Nasi Lemak（椰漿飯）
+          - [ ] Roti Canai（印度烤餅）
+          - [ ] Char Kway Teow（炒粿條）
+          - [ ] Bak Kut Teh（肉骨茶）
+          - [ ] 榴槤（10月正值榴槤季！）
+          - [ ] Jalan Alor 串燒雞翅
+          - [ ] 馬六甲 Cendol（刨冰甜品）
+          - [ ] 馬六甲 Laksa Lemak（娘惹叻沙）
+          - [ ] 娘惹料理（Nyonya Cuisine）
+
+          ## 推薦地點
+          - [ ] Jalan Alor 夜市
+          - [ ] 茨廠街早餐
+          - [ ] Bangsar 咖啡廳早午餐
+          - [ ] 馬六甲雞場街（Jonker Walk）
+
+          詳見 [每日行程](../itinerary.md)""",
+                  "🍜 餐飲", M1,
+              ),
+              (
+                  "🏰 規劃馬六甲（Malacca）行程",
+                  """## 任務說明
+          規劃 Day 3-4 馬六甲兩日遊行程（2026-10-24 ～ 2026-10-25）
+
+          ## 交通
+          - [ ] 訂 TBS（Terminal Bersepadu Selatan）→ Melaka Sentral 巴士票（RM 10～15/人，約2小時）
+          - TBS 位於 Bandar Tasik Selatan MRT/LRT/KTM 站旁
+
+          ## 住宿（1晚）
+          - [ ] 預訂馬六甲飯店，建議住雞場街附近
+          - 推薦：Hotel Equatorial Melaka、The Baba House、Holiday Inn Melaka
+
+          ## Day 3 行程
+          - [ ] 荷蘭紅屋廣場（Dutch Square）
+          - [ ] 聖地亞哥城堡（A Famosa）
+          - [ ] 聖保羅山（St. Paul's Hill）
+          - [ ] 馬六甲河遊船（Melaka River Cruise，RM 30/人）
+          - [ ] 雞場街夜市（週五六 18:00-24:00）
+
+          ## Day 4 行程
+          - [ ] 鄭和文化館（Cheng Ho Cultural Museum）
+          - [ ] 三保廟（Cheng Hoon Teng Temple）
+          - [ ] 購買馬六甲伴手禮
+          - [ ] 下午搭巴士返回吉隆坡
+
+          詳見 [景點清單](../attractions.md)""",
+                  "🎡 景點", M1,
+              ),
+              (
+                  "🧳 確認打包清單",
+                  """## 任務說明
+          出發前一週完成行李打包確認
+
+          ## 重要項目
+          - [ ] 護照（效期確認）
+          - [ ] 機票電子票（截圖）
+          - [ ] 飯店確認單（截圖）
+          - [ ] 旅遊保險文件
+          - [ ] 馬幣現金
+          - [ ] 信用卡（2張）
+          - [ ] 轉接插頭（Type G 英式）
+          - [ ] 防蚊液
+          - [ ] 防曬乳 SPF50+
+          - [ ] 薄長袖（清真寺/廟宇參觀）
+
+          詳見 [打包清單](../packing-list.md)""",
+                  "📄 文件", MW,
+              ),
+          ]
+
+          for title, body, label, milestone in issues:
+              create_issue(title, body, label, milestone)
+
+          print("\n✅ All setup complete!")
+          PYEOF
